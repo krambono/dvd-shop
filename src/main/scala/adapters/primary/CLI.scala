@@ -26,8 +26,7 @@ object CLI extends IOApp:
       potentialPrice: Either[List[String], Double]
   ): IO[ExitCode] =
     potentialPrice match
-      case Left(errors) =>
-        exit(errors.foldLeft("")(_ + _ + "\n"))
+      case Left(errors) => exit(errors.mkString("\n"))
       case Right(price) => success(price)
 
   private def parseArguments(args: Seq[String]): Either[String, String] =

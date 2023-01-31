@@ -10,11 +10,20 @@ import cats.implicits.*
 
 def computeBasketPrice(titles: List[String])(
     dvdRepository: DVDRepository
-): IO[Either[String, Double]] =
+): IO[Either[List[String], Double]] =
   titles
-    .map(dvdRepository.getDVD)
-    .sequence
-    .map(_.sequence.map(computeBasketPriceFromDVDs))
+    .traverse(dvdRepository.getDVD)
+    .map(
+      _.foldRight(Right(List.empty): Either[List[String], List[DVD]])(
+        (cur, acc) =>
+          (acc, cur) match
+            case (Left(accError), Left(curError)) => Left(curError :: accError)
+            case (Left(accError), Right(_))       => Left(accError)
+            case (Right(_), Left(curError))       => Left(List(curError))
+            case (Right(accValue), Right(curValue)) =>
+              Right(curValue :: accValue)
+      ).map(computeBasketPriceFromDVDs)
+    )
 
 private def computeBasketPriceFromDVDs(dvds: List[DVD]): Double =
   val bttfDvds = dvds.filter(checkIsBttf) // BTTF stand for "Back to the Future"

@@ -9,14 +9,25 @@ import cats.effect.unsafe.implicits.global
 
 class ComputeBasketPriceTest extends AnyFlatSpec with should.Matchers {
 
-  val dvdRepository = new FakeDVDRepository(List(bttfDVD(bttf1), bttfDVD(bttf2), bttfDVD(bttf3), DVD(starWars)))
+  val dvdRepository = new FakeDVDRepository(
+    List(bttfDVD(bttf1), bttfDVD(bttf2), bttfDVD(bttf3), DVD(starWars))
+  )
 
   "The total price" should "be 0 if the basket is empty" in {
     totalPriceShouldBe()(0)
   }
 
   "The computation of price" should "failed if the DVD is not known from title" in {
-    totalPriceShouldHaveFailed("Avengers")("The DVD 'Avengers' is not available")
+    totalPriceShouldHaveFailed("Avengers")(
+      "The DVD 'Avengers' is not available"
+    )
+  }
+
+  "The computation of price" should "failed if multiple DVD are not known from title" in {
+    totalPriceShouldHaveFailed("Avengers", "Spiderman")(
+      "The DVD 'Avengers' is not available",
+      "The DVD 'Spiderman' is not available"
+    )
   }
 
   "The price of a standard DVD" should "be 20€" in {
@@ -53,10 +64,12 @@ class ComputeBasketPriceTest extends AnyFlatSpec with should.Matchers {
   }
 
   private def totalPriceShouldBe(titles: String*)(total: Double) =
-    computeBasketPrice(titles.toList)(dvdRepository).unsafeRunSync() shouldBe Right(total)
+    computeBasketPrice(titles.toList)(dvdRepository)
+      .unsafeRunSync() shouldBe Right(total)
 
-  private def totalPriceShouldHaveFailed(titles: String*)(error: String) =
-    computeBasketPrice(titles.toList)(dvdRepository).unsafeRunSync() shouldBe Left(error)
+  private def totalPriceShouldHaveFailed(titles: String*)(error: String*) =
+    computeBasketPrice(titles.toList)(dvdRepository)
+      .unsafeRunSync() shouldBe Left(error.toList)
 
 }
 

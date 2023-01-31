@@ -40,12 +40,14 @@ private val checkIsBttf = DVD.checkIsFromSaga("Back to the Future")
 private val checkIsStandardDvd = fNot(checkIsBttf)
 
 private def computePriceForStandardDvds(dvds: List[DVD]): Double =
-  dvds.length * 20
+  dvds.length * DVD_STANDARD_PRICE
 
 private def computePriceForBttfDvds(dvds: List[DVD]): Double =
   val numberOfDifferentDvds = HashSet.from(dvds).size
   val discountAccordingToDifferentDvds = HashMap((1, 1.0), (2, 0.9), (3, 0.8))
-  discountAccordingToDifferentDvds
-    .get(numberOfDifferentDvds)
-    .map(dvds.length * 15 * _)
-    .getOrElse(0.0)
+  val factor =
+    discountAccordingToDifferentDvds.getOrElse(numberOfDifferentDvds, 1.0)
+  dvds.length * DVD_BTTF_PRICE * factor
+
+private val DVD_STANDARD_PRICE = 20
+private val DVD_BTTF_PRICE = 15

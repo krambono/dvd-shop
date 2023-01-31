@@ -29,11 +29,12 @@ object CLI extends IOApp:
       case Left(errors) => exit(errors.mkString("\n"))
       case Right(price) => success(price)
 
-  private def parseArguments(args: Seq[String]): Either[String, String] =
-    val length = args.length
-    if length != 1 then
-      Left("A unique command line argument is required:\n\tsbt \"run [FILE]\"")
-    else Right(args.head)
+  private def parseArguments(args: List[String]): Either[String, String] =
+    val usage =
+      "A unique command line argument is required:\n\tsbt \"run [FILE]\""
+    args match
+      case head :: Nil => Right(head)
+      case _           => Left(usage)
 
   private def readLinesFromFile(file: String): IO[List[String]] =
     IO {

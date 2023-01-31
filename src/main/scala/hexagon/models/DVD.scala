@@ -9,4 +9,4 @@ object DVD:
   def apply(title: String): DVD =
     DVD(title, None)
 
-  def checkIsFromSaga(saga: String)(dvd: DVD): Boolean = dvd.saga == Some(saga)
+  def checkIsFromSaga(saga: String)(dvd: DVD): Boolean = dvd.saga.contains(saga)

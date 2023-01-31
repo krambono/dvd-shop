@@ -13,17 +13,20 @@ def computeBasketPrice(titles: List[String])(
 ): IO[Either[List[String], Double]] =
   titles
     .traverse(dvdRepository.getDVD)
-    .map(
-      _.foldRight(Right(List.empty): Either[List[String], List[DVD]])(
-        (cur, acc) =>
-          (acc, cur) match
-            case (Left(accError), Left(curError)) => Left(curError :: accError)
-            case (Left(accError), Right(_))       => Left(accError)
-            case (Right(_), Left(curError))       => Left(List(curError))
-            case (Right(accValue), Right(curValue)) =>
-              Right(curValue :: accValue)
-      ).map(computeBasketPriceFromDVDs)
-    )
+    .map(accumulateErrors(_).map(computeBasketPriceFromDVDs))
+
+private def accumulateErrors(
+    list: List[Either[String, DVD]]
+): Either[List[String], List[DVD]] =
+  list.foldRight(Right(List.empty): Either[List[String], List[DVD]])(
+    (cur, acc) =>
+      (acc, cur) match
+        case (Left(errors), Left(error)) => Left(error :: errors)
+        case (Left(errors), Right(_))    => Left(errors)
+        case (Right(_), Left(error))     => Left(List(error))
+        case (Right(dvds), Right(dvd)) =>
+          Right(dvd :: dvds)
+  )
 
 private def computeBasketPriceFromDVDs(dvds: List[DVD]): Double =
   val bttfDvds = dvds.filter(checkIsBttf) // BTTF stand for "Back to the Future"

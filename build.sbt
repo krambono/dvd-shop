@@ -1,4 +1,4 @@
-ThisBuild / scalaVersion := "3.2.1"
+ThisBuild / scalaVersion := "3.3.3"
 ThisBuild / organization := "com.ekinox"
 
 lazy val dvdShop = (project in file("."))
